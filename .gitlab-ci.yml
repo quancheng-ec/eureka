@@ -1,0 +1,18 @@
+stages:
+  - docker-build
+before_script:
+  - eurekaservice=registry.docker.quancheng-ec.com:5000/eureka-service:`TZ=CST-8 date '+%Y%m%d-%H%M'`
+  - hostname -i
+  - whoami
+build_images:
+   stage: docker-build
+   script:
+    - echo $image
+    - if [ "`docker images | awk '/^registry.docker.quancheng-ec.com:5000/ { print $3 }'`" ]; then docker rmi -f $(docker images | awk '/^registry.docker.quancheng-ec.com:5000/ { print $3 }' ); fi
+    - mvn clean install -U
+    - echo "Build Docker Image..."
+    - docker build --no-cache -t eurekaservice .
+    - echo "Push Image:" eurekaservice " to repository..."
+    - docker push eurekaservice
+   only:
+    - master
